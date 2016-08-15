@@ -1,3 +1,17 @@
+/**
+ * HACKED / REVERSED CALENDAR
+ * This date picker has an odd workflow where if a user wants to enter a year
+ * they must navigate upwards from day -> month -> year -> decade -> century
+ * we wanted the opposite workflow where a user picks a date first and navigates
+ * down until they have chosen a date.
+ *
+ * The overides in this file are documented with an @overide comment block.
+ *
+ * This file is forked from https://github.com/jquense/react-widgets/commit/e0dc5f3735606ded935c7bd073ee9670b9be0872
+ * or the tagged release Release v4.0.0-beta.3.
+ *
+ */
+
 import React from 'react';
 import cn from 'classnames';
 
@@ -74,15 +88,20 @@ let propTypes = {
   view: React.PropTypes.oneOf(VIEW_OPTIONS),
   initialView: React.PropTypes.oneOf(VIEW_OPTIONS),
 
-
-  finalView(props, propName, componentName) {
-    var err = React.PropTypes.oneOf(VIEW_OPTIONS)(props, propName, componentName)
-
-    if (err) return err
-    if (VIEW_OPTIONS.indexOf(props[propName]) < VIEW_OPTIONS.indexOf(props.initialView))
-      return new Error(`The \`${propName}\` prop: \`${props[propName]}\` cannot be 'lower' than the \`initialView\`
-        prop. This creates a range that cannot be rendered.`.replace(/\n\t/g, ''))
-  },
+/**
+* @override - finalView proptype check is vastly simplified.
+*
+*  finalView(props, propName, componentName) {
+*    var err = React.PropTypes.oneOf(VIEW_OPTIONS)(props, propName, componentName)
+*
+*    if (err) return err
+*    if (VIEW_OPTIONS.indexOf(props[propName]) < VIEW_OPTIONS.indexOf(props.initialView))
+*      return new Error(`The \`${propName}\` prop: \`${props[propName]}\` cannot be 'lower' than the \`initialView\`
+*        prop. This creates a range that cannot be rendered.`.replace(/\n\t/g, ''))
+*  },
+*
+ */
+  finalView: React.PropTypes.oneOf(VIEW_OPTIONS),
 
   onViewChange: React.PropTypes.func,
   onNavigate: React.PropTypes.func,
@@ -128,7 +147,11 @@ let Calendar = React.createClass({
   getInitialState(){
     return {
       selectedIndex: 0,
-      view: this.props.initialView || 'month'
+/**
+ * @override - initialView set to century
+ *    view: this.props.initialView || 'month'
+ */
+      view: this.props.initialView || 'century'
     }
   },
 
@@ -139,8 +162,13 @@ let Calendar = React.createClass({
       min:          new Date(1900, 0, 1),
       max:          new Date(2099, 11, 31),
 
-      initialView:  'month',
-      finalView:    'century',
+/**
+ * @override - default props for final and initial views overridden
+ *   initialView:  'month',
+ *   finalView:    'century',
+ */
+      initialView:  'century',
+      finalView:    'month',
 
       tabIndex:     '0',
       footer:        true,
@@ -159,8 +187,14 @@ let Calendar = React.createClass({
   },
 
   componentWillReceiveProps({ initialView, finalView, value, currentDate }) {
-    let bottom  = VIEW_OPTIONS.indexOf(initialView)
-      , top     = VIEW_OPTIONS.indexOf(finalView)
+    /**
+     * @override - bottom & top concepts reversed
+     *  let bottom  = VIEW_OPTIONS.indexOf(initialView)
+     *  , top     = VIEW_OPTIONS.indexOf(finalView)
+     */
+
+    let bottom  = VIEW_OPTIONS.indexOf(finalView)
+      , top     = VIEW_OPTIONS.indexOf(initialView)
       , current = VIEW_OPTIONS.indexOf(this.state.view)
       , view    = this.state.view
       , val     = this.inRangeValue(value);
@@ -188,7 +222,11 @@ let Calendar = React.createClass({
       , footerFormat
       , disabled
       , readOnly
-      , finalView
+      /**
+       * @override - swap finalView for initialView
+       * , finalView
+       */
+      , initialView
       , footer
       , messages
       , min
@@ -234,7 +272,11 @@ let Calendar = React.createClass({
           label={this._label()}
           labelId={this.labelId}
           messages={messages}
-          upDisabled={  isDisabled || view === finalView}
+          /**
+           * @override - swap finalView for initialView
+           *   upDisabled={  isDisabled || view === finalView}
+           */
+          upDisabled={  isDisabled || view === initialView}
           prevDisabled={isDisabled || !dates.inRange(this.nextDate(dir.LEFT), min, max, view)}
           nextDisabled={isDisabled || !dates.inRange(this.nextDate(dir.RIGHT), min, max, view)}
           onViewChange={this.navigate.bind(null, dir.UP, null)}
@@ -313,7 +355,11 @@ let Calendar = React.createClass({
 
   @widgetEditable
   change(date) {
-    let isAtBottomView = this.state.view === this.props.initialView;
+    /**
+     * @override - swap logic for isAtBottomView
+     *   let isAtBottomView = this.state.view === this.props.initialView;
+     */
+    let isAtBottomView = this.state.view === this.props.finalView;
 
     if (isAtBottomView) {
       this.setCurrentDate(date)
@@ -460,10 +506,21 @@ let Calendar = React.createClass({
       , this.props.min)
   },
 
+  /**
+   * @override - reverse isValidView logic
+   *   isValidView(next) {
+   *     var bottom  = VIEW_OPTIONS.indexOf(this.props.initialView),
+   *         top     = VIEW_OPTIONS.indexOf(this.props.finalView),
+   *         current = VIEW_OPTIONS.indexOf(next);
+   *
+   *      return current <= bottom && current >= top
+   *   }
+   */
+
   isValidView(next) {
-    var bottom  = VIEW_OPTIONS.indexOf(this.props.initialView)
-      , top     = VIEW_OPTIONS.indexOf(this.props.finalView)
-      , current = VIEW_OPTIONS.indexOf(next);
+    var bottom  = VIEW_OPTIONS.indexOf(this.props.finalView),
+        top     = VIEW_OPTIONS.indexOf(this.props.initialView),
+        current = VIEW_OPTIONS.indexOf(next);
 
     return current >= bottom && current <= top
   }
