@@ -3921,14 +3921,18 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function customPropType(handler, propType, name) {
 
-	  return function (props, propName) {
+	  return function (props, propName, wrappedName) {
 
 	    if (props[propName] !== undefined) {
 	      if (!props[handler]) {
 	        return new Error('You have provided a `' + propName + '` prop to ' + '`' + name + '` without an `' + handler + '` handler. This will render a read-only field. ' + 'If the field should be mutable use `' + defaultKey(propName) + '`. Otherwise, set `' + handler + '`');
 	      }
 
-	      return propType && propType(props, propName, name);
+	      for (var _len = arguments.length, args = Array(_len > 3 ? _len - 3 : 0), _key = 3; _key < _len; _key++) {
+	        args[_key - 3] = arguments[_key];
+	      }
+
+	      return propType && propType.apply(undefined, [props, propName, name].concat(args));
 	    }
 	  };
 	}
@@ -3981,8 +3985,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function chain(thisArg, a, b) {
 	  return function chainedFunction() {
-	    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-	      args[_key] = arguments[_key];
+	    for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+	      args[_key2] = arguments[_key2];
 	    }
 
 	    a && a.call.apply(a, [thisArg].concat(args));
@@ -5416,7 +5420,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }return target;
 	};
 
-	var _VIEW, _OPPOSITE_DIRECTION, _MULTIPLIER, _desc, _value2, _obj; //values, omit
+	var _VIEW, _OPPOSITE_DIRECTION, _MULTIPLIER, _desc, _value2, _obj; /**
+	                                                                    * HACKED / REVERSED CALENDAR
+	                                                                    * This date picker has an odd workflow where if a user wants to enter a year
+	                                                                    * they must navigate upwards from day -> month -> year -> decade -> century
+	                                                                    * we wanted the opposite workflow where a user picks a date first and navigates
+	                                                                    * down until they have chosen a date.
+	                                                                    *
+	                                                                    * The overides in this file are documented with an @overide comment block.
+	                                                                    *
+	                                                                    * This file is forked from https://github.com/jquense/react-widgets/commit/e0dc5f3735606ded935c7bd073ee9670b9be0872
+	                                                                    * or the tagged release Release v4.0.0-beta.3.
+	                                                                    *
+	                                                                    */
+
+	//values, omit
+
 
 	var _react = __webpack_require__(19);
 
@@ -5590,12 +5609,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	  view: _react2.default.PropTypes.oneOf(VIEW_OPTIONS),
 	  initialView: _react2.default.PropTypes.oneOf(VIEW_OPTIONS),
 
-	  finalView: function finalView(props, propName, componentName) {
-	    var err = _react2.default.PropTypes.oneOf(VIEW_OPTIONS)(props, propName, componentName);
-
-	    if (err) return err;
-	    if (VIEW_OPTIONS.indexOf(props[propName]) < VIEW_OPTIONS.indexOf(props.initialView)) return new Error(('The `' + propName + '` prop: `' + props[propName] + '` cannot be \'lower\' than the `initialView`\n        prop. This creates a range that cannot be rendered.').replace(/\n\t/g, ''));
-	  },
+	  /**
+	  * @override - finalView proptype check is vastly simplified.
+	  *
+	  *  finalView(props, propName, componentName) {
+	  *    var err = React.PropTypes.oneOf(VIEW_OPTIONS)(props, propName, componentName)
+	  *
+	  *    if (err) return err
+	  *    if (VIEW_OPTIONS.indexOf(props[propName]) < VIEW_OPTIONS.indexOf(props.initialView))
+	  *      return new Error(`The \`${propName}\` prop: \`${props[propName]}\` cannot be 'lower' than the \`initialView\`
+	  *        prop. This creates a range that cannot be rendered.`.replace(/\n\t/g, ''))
+	  *  },
+	  *
+	   */
+	  finalView: _react2.default.PropTypes.oneOf(VIEW_OPTIONS),
 
 	  onViewChange: _react2.default.PropTypes.func,
 	  onNavigate: _react2.default.PropTypes.func,
@@ -5634,7 +5661,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	  getInitialState: function getInitialState() {
 	    return {
 	      selectedIndex: 0,
-	      view: this.props.initialView || 'month'
+	      /**
+	       * @override - initialView set to century
+	       *    view: this.props.initialView || 'month'
+	       */
+	      view: this.props.initialView || 'century'
 	    };
 	  },
 	  getDefaultProps: function getDefaultProps() {
@@ -5644,8 +5675,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	      min: new Date(1900, 0, 1),
 	      max: new Date(2099, 11, 31),
 
-	      initialView: 'month',
-	      finalView: 'century',
+	      /**
+	       * @override - default props for final and initial views overridden
+	       *   initialView:  'month',
+	       *   finalView:    'century',
+	       */
+	      initialView: 'century',
+	      finalView: 'month',
 
 	      tabIndex: '0',
 	      footer: true,
@@ -5664,8 +5700,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var value = _ref.value;
 	    var currentDate = _ref.currentDate;
 
-	    var bottom = VIEW_OPTIONS.indexOf(initialView),
-	        top = VIEW_OPTIONS.indexOf(finalView),
+	    /**
+	     * @override - bottom & top concepts reversed
+	     *  let bottom  = VIEW_OPTIONS.indexOf(initialView)
+	     *  , top     = VIEW_OPTIONS.indexOf(finalView)
+	     */
+
+	    var bottom = VIEW_OPTIONS.indexOf(finalView),
+	        top = VIEW_OPTIONS.indexOf(initialView),
 	        current = VIEW_OPTIONS.indexOf(this.state.view),
 	        view = this.state.view,
 	        val = this.inRangeValue(value);
@@ -5689,7 +5731,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var footerFormat = _props.footerFormat;
 	    var disabled = _props.disabled;
 	    var readOnly = _props.readOnly;
-	    var finalView = _props.finalView;
+	    var initialView = _props.initialView;
 	    var footer = _props.footer;
 	    var messages = _props.messages;
 	    var min = _props.min;
@@ -5734,8 +5776,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }), _react2.default.createElement(_Header2.default, {
 	      label: this._label(),
 	      labelId: this.labelId,
-	      messages: messages,
-	      upDisabled: isDisabled || view === finalView,
+	      messages: messages
+	      /**
+	       * @override - swap finalView for initialView
+	       *   upDisabled={  isDisabled || view === finalView}
+	       */
+	      , upDisabled: isDisabled || view === initialView,
 	      prevDisabled: isDisabled || !_dates2.default.inRange(this.nextDate(dir.LEFT), min, max, view),
 	      nextDisabled: isDisabled || !_dates2.default.inRange(this.nextDate(dir.RIGHT), min, max, view),
 	      onViewChange: this.navigate.bind(null, dir.UP, null),
@@ -5794,7 +5840,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (+this.props.tabIndex > -1) _compat2.default.findDOMNode(this).focus();
 	  },
 	  change: function change(date) {
-	    var isAtBottomView = this.state.view === this.props.initialView;
+	    /**
+	     * @override - swap logic for isAtBottomView
+	     *   let isAtBottomView = this.state.view === this.props.initialView;
+	     */
+	    var isAtBottomView = this.state.view === this.props.finalView;
 
 	    if (isAtBottomView) {
 	      this.setCurrentDate(date);
@@ -5907,9 +5957,21 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    return _dates2.default.max(_dates2.default.min(value, this.props.max), this.props.min);
 	  },
+
+	  /**
+	   * @override - reverse isValidView logic
+	   *   isValidView(next) {
+	   *     var bottom  = VIEW_OPTIONS.indexOf(this.props.initialView),
+	   *         top     = VIEW_OPTIONS.indexOf(this.props.finalView),
+	   *         current = VIEW_OPTIONS.indexOf(next);
+	   *
+	   *      return current <= bottom && current >= top
+	   *   }
+	   */
+
 	  isValidView: function isValidView(next) {
-	    var bottom = VIEW_OPTIONS.indexOf(this.props.initialView),
-	        top = VIEW_OPTIONS.indexOf(this.props.finalView),
+	    var bottom = VIEW_OPTIONS.indexOf(this.props.finalView),
+	        top = VIEW_OPTIONS.indexOf(this.props.initialView),
 	        current = VIEW_OPTIONS.indexOf(next);
 
 	    return current >= bottom && current <= top;
@@ -9334,6 +9396,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // this intermediate state is for when one runs into
 	  // the decimal or are typing the number
 
+
 	  NumberPickerInput.prototype.setStringValue = function setStringValue(stringValue) {
 	    this.setState({ stringValue: stringValue });
 	  };
@@ -10890,7 +10953,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var _props5 = this.props;
 	      var children = _props5.children;
 	      var disabled = _props5.disabled;
-	      var readOnly = _props5.readOnly;
 	      var item = _props5.dataItem;
 	      var _parent$props = parent.props;
 	      var multiple = _parent$props.multiple;
@@ -10899,6 +10961,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	      var checked = (0, _interaction.contains)(item, parent._values(), parent.props.valueField),
 	          type = multiple ? 'checkbox' : 'radio';
+
+	      var readOnly = (0, _interaction.isReadOnly)(parent.props);
 
 	      return _react2.default.createElement(_ListOption2.default, _extends({}, this.props, {
 	        role: type,
