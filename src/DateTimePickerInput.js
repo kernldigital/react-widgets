@@ -9,7 +9,8 @@ import _  from './util/_';
 class DateTimePickerInput extends React.Component {
 
   static propTypes = {
-    format: CustomPropTypes.dateFormat.isRequired,
+    // @override - commented to remove console warning
+    // format: CustomPropTypes.dateFormat.isRequired,
     editing: React.PropTypes.bool,
     editFormat: CustomPropTypes.dateFormat,
     parse: React.PropTypes.func.isRequired,

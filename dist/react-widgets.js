@@ -7998,7 +7998,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  culture: _react2.default.PropTypes.string,
 
-	  format: _propTypes2.default.dateFormat,
+	  // @override - commented to remove console warning
+	  // format:         CustomPropTypes.dateFormat,
 	  timeFormat: _propTypes2.default.dateFormat,
 	  editFormat: _propTypes2.default.dateFormat,
 
@@ -8540,7 +8541,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  return DateTimePickerInput;
 	}(_react2.default.Component), _class.propTypes = {
-	  format: _propTypes2.default.dateFormat.isRequired,
+	  // @override - commented to remove console warning
+	  // format: CustomPropTypes.dateFormat.isRequired,
 	  editing: _react2.default.PropTypes.bool,
 	  editFormat: _propTypes2.default.dateFormat,
 	  parse: _react2.default.PropTypes.func.isRequired,

@@ -49,7 +49,8 @@ let propTypes = {
 
     culture:        React.PropTypes.string,
 
-    format:         CustomPropTypes.dateFormat,
+    // @override - commented to remove console warning
+    // format:         CustomPropTypes.dateFormat,
     timeFormat:     CustomPropTypes.dateFormat,
     editFormat:     CustomPropTypes.dateFormat,
 
