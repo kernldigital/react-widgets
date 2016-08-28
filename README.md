@@ -1,6 +1,9 @@
 react-widgets
 =============
 
+* auto-gen TOC:
+{:toc}
+
 [![NPM version][npm-image]][npm-url]
 [![Downloads][downloads-image]][downloads-url]
 [![#react-widgets channel on reactiflux discord](https://img.shields.io/badge/discord-%23react--widgets-blue.svg?style=flat-square)](https://discord.gg/0ZcbPKXt5bY4znh9)
